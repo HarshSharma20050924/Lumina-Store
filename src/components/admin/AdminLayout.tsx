@@ -8,9 +8,10 @@ import { OrderManager } from './OrderManager';
 import { ContentManager } from './ContentManager';
 import { NotificationCenter } from './NotificationCenter';
 import { Button } from '../ui/Button';
+import { getAppUrl } from '../../utils';
 
 export const AdminLayout = () => {
-  const { navigateHome, navigateToDelivery, logout, adminUser, toggleLoginModal, fetchAllOrders, fetchProducts, fetchSiteContent } = useStore();
+  const { logout, adminUser, toggleLoginModal, fetchAllOrders, fetchProducts, fetchSiteContent } = useStore();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'content' | 'marketing'>('dashboard');
   const [isReady, setIsReady] = useState(false);
 
@@ -57,7 +58,7 @@ export const AdminLayout = () => {
                       <Button onClick={() => toggleLoginModal(true)} className="w-full">
                           Log In as Admin
                       </Button>
-                      <Button variant="ghost" onClick={() => window.location.href = 'http://127.0.0.1:3001/'}>
+                      <Button variant="ghost" onClick={() => window.location.href = getAppUrl('store')}>
                           Return to Store
                       </Button>
                   </div>
@@ -101,7 +102,7 @@ export const AdminLayout = () => {
         
         <div className="absolute bottom-0 w-full p-6 border-t border-gray-100 space-y-2">
            <button 
-             onClick={() => { window.open('http://127.0.0.1:3003/driver.html', '_blank'); }}
+             onClick={() => { window.open(getAppUrl('driver'), '_blank'); }}
              className="flex items-center text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 w-full p-2 rounded transition-colors"
            >
              <Truck className="w-5 h-5 mr-3" /> Driver App

@@ -1,17 +1,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../../store';
-import { MapPin, Box, CheckSquare, LogOut, Navigation, Menu, Truck, ArrowRight, ShieldCheck, User, Lock, ChevronLeft } from 'lucide-react';
+import { Box, CheckSquare, LogOut, Truck, ShieldCheck, User, Lock, ChevronLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DeliveryDashboard } from './DeliveryDashboard';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
+import { getAppUrl } from '../../utils';
 
 // Driver Flow Steps
 type DriverStep = 'EMAIL' | 'OTP' | 'PASSWORD_SETUP' | 'DETAILS' | 'LOGIN_PASSWORD';
 
 export const DeliveryLayout = () => {
-  const { driverUser, navigateHome, logout, fetchAgentJobs, login, registerDriver, sendOtp, validateOtp, addToast, checkEmail } = useStore();
+  const { driverUser, logout, fetchAgentJobs, login, registerDriver, sendOtp, validateOtp, addToast, checkEmail } = useStore();
   const [currentTab, setCurrentTab] = useState<'jobs' | 'history'>('jobs');
   
   // Auth State
@@ -21,7 +22,6 @@ export const DeliveryLayout = () => {
   const [otp, setOtp] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [isExistingDriver, setIsExistingDriver] = useState(false);
 
   useEffect(() => {
       if(driverUser) fetchAgentJobs();
@@ -96,6 +96,10 @@ export const DeliveryLayout = () => {
       } finally {
           setLoading(false);
       }
+  };
+
+  const navigateToStore = () => {
+      window.location.href = getAppUrl('store');
   };
 
   // --- Render Logged In View ---
@@ -304,7 +308,7 @@ export const DeliveryLayout = () => {
               </div>
               
               <div className="text-center mt-8">
-                  <button onClick={navigateHome} className="text-sm text-gray-500 hover:text-white transition-colors flex items-center justify-center gap-2 mx-auto">
+                  <button onClick={navigateToStore} className="text-sm text-gray-500 hover:text-white transition-colors flex items-center justify-center gap-2 mx-auto">
                       <ChevronLeft className="w-4 h-4" /> Back to Store
                   </button>
               </div>

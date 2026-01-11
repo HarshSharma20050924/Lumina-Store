@@ -1,6 +1,7 @@
 
 import { AppSlice, UISlice } from './types';
 import { api } from '../api';
+import { getAppUrl } from '../utils';
 
 // Helper to get initial view for Store App
 const getInitialView = (): any => {
@@ -10,22 +11,12 @@ const getInitialView = (): any => {
   
   try {
     const saved = localStorage.getItem('currentView');
-    // Prevent StoreApp from initializing with Admin or Delivery views from shared localStorage
+    // Prevent StoreApp from initializing with Admin or Delivery views from shared localStorage in dev
     if (saved === 'admin' || saved === 'delivery') return 'home';
     return saved || 'home';
   } catch {
     return 'home';
   }
-};
-
-const getAppUrl = (app: 'admin' | 'driver') => {
-    const isDev = import.meta.env.DEV;
-    if (isDev) {
-        const port = app === 'admin' ? 3002 : 3003;
-        return `http://${window.location.hostname}:${port}/${app}.html`;
-    }
-    // Production (Same Origin)
-    return `/${app}.html`;
 };
 
 export const createUISlice: AppSlice<UISlice> = (set, get) => ({
