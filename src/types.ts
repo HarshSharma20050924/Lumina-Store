@@ -34,6 +34,7 @@ export interface Product {
 
 export interface CartItem extends Product {
   cartId: string;
+  productId?: string; // Added to handle OrderHistory item mapping
   quantity: number;
   selectedColor: string;
   selectedSize: string;
@@ -64,7 +65,7 @@ export interface User {
   email: string;
   avatar?: string;
   phone?: string;
-  isPhoneVerified?: boolean; // Added this field
+  isPhoneVerified?: boolean; 
   address?: string;
   role?: 'USER' | 'ADMIN' | 'AGENT' | 'user' | 'admin' | 'agent';
 }
@@ -83,7 +84,7 @@ export interface Order {
   userId?: string;
   paymentMethod?: 'ONLINE' | 'COD';
   isPaid?: boolean;
-  deliveryCode?: string; // OTP
+  deliveryCode?: string; 
 }
 
 // --- Delivery Types ---
@@ -108,7 +109,7 @@ export interface HeroSlide {
 
 export interface SiteSection {
   id: string;
-  identifier: string; // 'men', 'women', 'kids'
+  identifier: string; 
   title: string;
   description: string;
   image: string;

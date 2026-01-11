@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, Menu, User, Settings, LayoutDashboard, LogOut } from 'lucide-react';
@@ -48,14 +49,14 @@ export const Header = () => {
           <div className="flex items-center justify-between gap-4">
             {/* Logo */}
             <div className="flex-shrink-0 flex items-center gap-4">
-               <button 
+               <Button 
                 variant="ghost" 
                 size="icon" 
                 className="md:hidden"
                 onClick={() => setIsMobileMenuOpen(true)}
               >
                 <Menu className="w-5 h-5" />
-              </button>
+              </Button>
 
               <button onClick={navigateHome} className="text-2xl font-bold tracking-tighter text-gray-900 group flex items-center gap-1">
                 Lumina
