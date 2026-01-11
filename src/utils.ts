@@ -64,9 +64,9 @@ export const sendNotification = async (title: string, body: string) => {
       const swRegistration = await Promise.race([
         navigator.serviceWorker.ready,
         new Promise((_, reject) => setTimeout(() => reject('SW_TIMEOUT'), 500))
-      ]);
+      ]) as ServiceWorkerRegistration;
 
-      if (swRegistration && 'showNotification' in swRegistration) {
+      if (swRegistration && typeof swRegistration === 'object' && 'showNotification' in swRegistration) {
         // @ts-ignore
         await swRegistration.showNotification(title, options);
         return;
