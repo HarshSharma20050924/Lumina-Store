@@ -40,7 +40,7 @@ const sendBrowserNotification = async (title: string, body: string) => {
                         vibrate: [200, 100, 200],
                         tag: 'lumina-otp',
                         requireInteraction: true // Keeps notification visible until clicked
-                    });
+                    } as any);
                     return;
                 }
             } catch (swError) {

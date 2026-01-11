@@ -1,7 +1,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import { StoreApp } from './apps/StoreApp';
 
 // Register Service Worker for Mobile Notifications
 if ('serviceWorker' in navigator) {
@@ -20,6 +20,6 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <App />
+    <StoreApp />
   </React.StrictMode>
 );
