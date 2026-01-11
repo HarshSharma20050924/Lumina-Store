@@ -1,0 +1,17 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Base Squircle -->
+  <rect width="512" height="512" rx="128" fill="#111827"/>
+
+  <!-- Vehicle body -->
+  <rect x="140" y="220" width="232" height="120" rx="24" fill="#14B8A6"/>
+  
+  <!-- Vehicle cabin/front -->
+  <rect x="320" y="240" width="52" height="80" rx="12" fill="#0F172A"/>
+
+  <!-- Wheels -->
+  <circle cx="180" cy="360" r="28" fill="#0F172A"/>
+  <circle cx="332" cy="360" r="28" fill="#0F172A"/>
+
+  <!-- Window / windshield -->
+  <rect x="148" y="230" width="72" height="48" rx="8" fill="#0F172A"/>
+</svg>
