@@ -2,19 +2,18 @@
   "name": "lumina-backend",
   "version": "1.0.0",
   "type": "commonjs",
-  "main": "src/server.ts",
+  "main": "dist/server.js",
   "scripts": {
-    "dev": "nodemon src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js",
-    "prisma:generate": "prisma generate",
-    "prisma:push": "prisma db push",
-    "seed": "ts-node prisma/seed.ts"
+    "dev": "nodemon src/server.ts",                      
+    "build": "tsc",                                       
+    "start": "node dist/server.js",                       
+    "prisma:generate": "prisma generate",                
+    "migrate": "prisma migrate deploy",                  
+    "seed": "ts-node prisma/seed.ts",                   
+    "prepare:prod": "npm run prisma:generate && npm run migrate && npm run build"  
   },
   "nodemonConfig": {
-    "watch": [
-      "src"
-    ],
+    "watch": ["src"],
     "ext": "ts",
     "exec": "ts-node"
   },
