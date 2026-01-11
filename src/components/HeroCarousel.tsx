@@ -9,7 +9,6 @@ export const HeroCarousel = () => {
   const { heroSlides, toggleLookbook } = useStore();
   const [current, setCurrent] = useState(0);
 
-  // Fallback slides if DB is empty
   const slides = heroSlides.length > 0 ? heroSlides : [
     {
       id: 'default-1',
@@ -41,7 +40,7 @@ export const HeroCarousel = () => {
   const currentSlide = slides[current];
 
   return (
-    <div className="relative h-[85vh] min-h-[600px] w-full overflow-hidden bg-gray-900">
+    <div className="relative h-[65vh] min-h-[500px] w-full overflow-hidden bg-gray-900">
       <AnimatePresence mode="wait">
         <motion.div
           key={current}
@@ -56,7 +55,7 @@ export const HeroCarousel = () => {
              <img
                src={currentSlide.image}
                alt={currentSlide.title}
-               className="w-full h-full object-cover opacity-80"
+               className="w-full h-full object-cover opacity-80 object-top md:object-center"
              />
              <div className="absolute inset-0 bg-black/30" />
              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
@@ -72,35 +71,35 @@ export const HeroCarousel = () => {
                  initial={{ y: 30, opacity: 0 }}
                  animate={{ y: 0, opacity: 1 }}
                  transition={{ delay: 0.3, duration: 0.8 }}
-                 className="space-y-6"
+                 className="space-y-4 md:space-y-6"
                >
-                 <span className="inline-block px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-white text-xs font-medium tracking-widest uppercase border border-white/20">
+                 <span className="inline-block px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-white text-[10px] md:text-xs font-medium tracking-widest uppercase border border-white/20">
                    New Collection
                  </span>
-                 <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight leading-none">
+                 <h1 className="text-4xl md:text-7xl font-bold text-white tracking-tight leading-tight">
                    {currentSlide.title}
                  </h1>
-                 <p className="text-xl text-gray-200 font-light max-w-lg">
+                 <p className="text-base md:text-xl text-gray-200 font-light max-w-lg">
                    {currentSlide.subtitle}
                  </p>
-                 <div className={`flex gap-4 pt-4 ${
+                 <div className={`flex flex-col sm:flex-row gap-4 pt-4 ${
                     currentSlide.align === 'center' ? 'justify-center' : 
                     currentSlide.align === 'right' ? 'justify-end' : ''
                  }`}>
                    <button 
                         onClick={handleShopNow}
-                        className="group relative px-8 py-4 bg-white text-black rounded-full overflow-hidden transition-all hover:scale-105"
+                        className="group relative px-6 py-3 md:px-8 md:py-4 bg-white text-black rounded-full overflow-hidden transition-all hover:scale-105"
                     >
-                        <span className="relative z-10 flex items-center gap-2 font-medium tracking-wider text-sm uppercase">
+                        <span className="relative z-10 flex items-center justify-center gap-2 font-medium tracking-wider text-xs md:text-sm uppercase">
                             Shop Now <ArrowDown className="w-4 h-4" />
                         </span>
                     </button>
 
                     <button 
                         onClick={() => toggleLookbook(true)}
-                        className="group relative px-8 py-4 backdrop-blur-md bg-white/10 border border-white/30 text-white rounded-full overflow-hidden transition-all hover:bg-white/20"
+                        className="group relative px-6 py-3 md:px-8 md:py-4 backdrop-blur-md bg-white/10 border border-white/30 text-white rounded-full overflow-hidden transition-all hover:bg-white/20"
                     >
-                        <span className="relative z-10 flex items-center gap-2 font-medium tracking-wider text-sm uppercase">
+                        <span className="relative z-10 flex items-center justify-center gap-2 font-medium tracking-wider text-xs md:text-sm uppercase">
                             <BookOpen className="w-4 h-4" /> Lookbook
                         </span>
                     </button>

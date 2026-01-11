@@ -1,0 +1,16 @@
+
+{
+  "short_name": "Lumina",
+  "name": "Lumina Store",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#111827",
+  "background_color": "#ffffff"
+}

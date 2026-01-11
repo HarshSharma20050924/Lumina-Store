@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Menu, User, Settings, LayoutDashboard, LogOut } from 'lucide-react';
+import { ShoppingBag, Menu, User, Settings, LayoutDashboard, LogOut, Download } from 'lucide-react';
 import { useStore } from '../store';
 import { Button } from './ui/Button';
 import { SearchBar } from './ui/SearchBar';
@@ -14,6 +14,7 @@ export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
   
   const { cart, toggleCart, navigateHome, user, toggleLoginModal, logout, navigateToProfile, navigateToAdmin } = useStore();
   
@@ -24,15 +25,39 @@ export const Header = () => {
       setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
   }, []);
+
+  const handleInstallClick = async () => {
+    if (!installPrompt) return;
+    await installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setInstallPrompt(null);
+    }
+  };
 
   const isAdmin = user?.role?.toUpperCase() === 'ADMIN';
 
   return (
     <>
       <LoginModal />
-      <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+      <MobileMenu 
+        isOpen={isMobileMenuOpen} 
+        onClose={() => setIsMobileMenuOpen(false)} 
+        installPrompt={installPrompt}
+        onInstall={handleInstallClick}
+      />
       
       <motion.header
         className={cn(
@@ -69,6 +94,17 @@ export const Header = () => {
 
             {/* Actions */}
             <div className="flex items-center justify-end gap-1 sm:gap-2">
+              {installPrompt && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleInstallClick}
+                  className="hidden sm:flex items-center gap-2 text-xs font-medium text-primary-600 hover:text-primary-700 bg-primary-50 hover:bg-primary-100"
+                >
+                  <Download className="w-3.5 h-3.5" /> Install App
+                </Button>
+              )}
+
               <SearchBar />
               
               <div className="relative hidden sm:block">

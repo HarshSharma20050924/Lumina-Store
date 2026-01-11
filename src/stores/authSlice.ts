@@ -7,30 +7,57 @@ import { getAppUrl } from '../utils';
 const getRedirectUrl = (app: 'admin' | 'driver' | 'store', token?: string) => {
     const baseUrl = getAppUrl(app);
     const search = token ? `?token=${token}` : '';
-    
-    // If it's the store, we don't append index.html usually, just the root
     if (app === 'store') {
         return `${baseUrl.replace(/\/$/, '')}/${search}`;
     }
-    
-    // For admin/driver in PROD (Vercel separate projects), they are effectively root '/' 
-    // because we rename admin.html -> index.html during build.
-    // However, getAppUrl returns the domain. 
     return `${baseUrl}${search}`;
 };
 
-// Helper for Browser Notifications
-const sendBrowserNotification = (title: string, body: string) => {
-    if (!("Notification" in window)) return;
-    
+// Robust Mobile Notification Sender
+const sendBrowserNotification = async (title: string, body: string) => {
+    // 1. Check basic support
+    if (!("Notification" in window)) {
+        console.warn("This browser does not support desktop notification");
+        return;
+    }
+
+    // 2. Request permission if needed
+    if (Notification.permission === "default") {
+        await Notification.requestPermission();
+    }
+
+    // 3. If granted, try to show
     if (Notification.permission === "granted") {
-        new Notification(title, { body, icon: 'https://ui-avatars.com/api/?name=L+S&background=000&color=fff' });
-    } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(permission => {
-            if (permission === "granted") {
-                new Notification(title, { body, icon: 'https://ui-avatars.com/api/?name=L+S&background=000&color=fff' });
+        // Method A: Service Worker (Required for Android/Mobile Chrome)
+        if ('serviceWorker' in navigator) {
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                if (registration) {
+                    await registration.showNotification(title, {
+                        body,
+                        icon: '/logo.svg', // Ensure this matches manifest
+                        badge: '/logo.svg',
+                        vibrate: [200, 100, 200],
+                        tag: 'lumina-otp',
+                        requireInteraction: true // Keeps notification visible until clicked
+                    });
+                    return;
+                }
+            } catch (swError) {
+                console.warn("ServiceWorker notification failed:", swError);
             }
-        });
+        }
+
+        // Method B: Classic Notification API (Desktop Fallback)
+        try {
+            new Notification(title, { 
+                body, 
+                icon: '/logo.svg',
+                requireInteraction: true 
+            });
+        } catch (e) {
+            console.warn("Classic Notification API failed:", e);
+        }
     }
 };
 
@@ -57,7 +84,6 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
       const isDev = import.meta.env.DEV;
       const currentPort = window.location.port;
 
-      // Logic to check if we are currently on the correct "App" (domain/port)
       const isAdminOnCorrectApp = (isDev && currentPort === '3002') || (!isDev && window.location.hostname.includes('admin'));
       const isDriverOnCorrectApp = (isDev && currentPort === '3003') || (!isDev && window.location.hostname.includes('driver'));
       const isStoreOnCorrectApp = (isDev && currentPort === '3001') || (!isDev && window.location.hostname.includes('store'));
@@ -67,7 +93,6 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
               window.location.href = getRedirectUrl('admin', data.token);
               return;
           }
-          
           localStorage.setItem('admin_token', data.token);
           set({ adminUser: data });
           get().addToast({ type: 'success', message: 'Admin Dashboard Accessed' });
@@ -77,20 +102,16 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
               window.location.href = getRedirectUrl('driver', data.token);
               return;
           }
-
           localStorage.setItem('driver_token', data.token);
           set({ driverUser: data });
           get().addToast({ type: 'success', message: 'Driver Interface Loaded' });
 
       } else {
-          // User Role
           if (!isStoreOnCorrectApp && !isAdminOnCorrectApp && !isDriverOnCorrectApp) {
-               // Fallback if somehow on unknown domain
                window.location.href = getRedirectUrl('store', data.token);
                return;
           }
           
-          // If a user logs into Admin/Driver app but is just a USER, redirect to store
           if (isAdminOnCorrectApp || isDriverOnCorrectApp) {
                window.location.href = getRedirectUrl('store', data.token);
                return;
@@ -142,17 +163,25 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
 
   sendOtp: async (email: string) => {
       try {
-          if("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+          // Pre-emptively request permission on click (User Action)
+          if("Notification" in window && Notification.permission === "default") {
               await Notification.requestPermission();
           }
 
           const response = await api.post('/auth/send-otp', { email });
           
           if (response.otp) {
-              sendBrowserNotification("Lumina Security Code", `Your verification code is: ${response.otp}`);
+              const msg = `Security Code: ${response.otp}`;
+              
+              // 1. Show Persistent Toast (Guaranteed Visibility)
+              get().addToast({ type: 'info', message: msg, duration: 15000 }); // 15 seconds
+              
+              // 2. Trigger System Notification
+              await sendBrowserNotification("Lumina Verification", msg);
+          } else {
+              get().addToast({ type: 'info', message: `Verification code sent to ${email}` });
           }
 
-          get().addToast({ type: 'info', message: `Verification code sent` });
       } catch (error: any) {
           get().addToast({ type: 'error', message: error.message });
           throw error;
@@ -235,11 +264,9 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
     const port = window.location.port;
     const hostname = window.location.hostname;
 
-    // --- TOKEN HANDOVER LOGIC (from redirects) ---
     const params = new URLSearchParams(window.location.search);
     const urlToken = params.get('token');
 
-    // Detect App Context correctly for Dev and Prod
     const isAdminApp = (isDev && port === '3002') || (!isDev && hostname.includes('admin'));
     const isDriverApp = (isDev && port === '3003') || (!isDev && hostname.includes('driver'));
 
@@ -251,12 +278,9 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
         } else {
             localStorage.setItem('client_token', urlToken);
         }
-        // Clean URL
         window.history.replaceState({}, document.title, window.location.pathname);
     }
-    // ----------------------------
 
-    // ADMIN APP
     if (isAdminApp) {
         const adminToken = localStorage.getItem('admin_token');
         if (adminToken) {
@@ -271,7 +295,6 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
         return; 
     }
 
-    // DRIVER APP
     if (isDriverApp) {
         const driverToken = localStorage.getItem('driver_token');
         if (driverToken) {
@@ -286,7 +309,6 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
         return;
     }
 
-    // STORE APP
     const clientToken = localStorage.getItem('client_token');
     if (clientToken) {
         try {
@@ -302,7 +324,15 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
   updateUserProfile: async (data) => {
     try {
       const updatedUser = await api.put('/auth/profile', data, 'client');
-      set({ user: updatedUser });
+      // Ensure we don't accidentally switch roles on the frontend
+      set(state => ({ 
+          user: { 
+              ...state.user, 
+              ...updatedUser,
+              // Keep original role if not explicitly changed
+              role: state.user?.role || updatedUser.role 
+          } 
+      }));
       get().addToast({ type: 'success', message: 'Profile updated' });
     } catch (error: any) {
       console.error(error);

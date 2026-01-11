@@ -1,15 +1,18 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight, User, ShoppingBag, Heart } from 'lucide-react';
+import { X, ChevronRight, User, ShoppingBag, Heart, Download } from 'lucide-react';
 import { Button } from './ui/Button';
 import { useStore } from '../store';
 
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  installPrompt?: any;
+  onInstall?: () => void;
 }
 
-export const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
+export const MobileMenu = ({ isOpen, onClose, installPrompt, onInstall }: MobileMenuProps) => {
   const { user, navigateToProfile, toggleLoginModal } = useStore();
   
   const MENU = [
@@ -50,6 +53,15 @@ export const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
 
           {/* Footer Actions */}
           <div className="p-6 bg-gray-50 space-y-4">
+             {installPrompt && (
+                <Button 
+                  onClick={onInstall} 
+                  className="w-full bg-primary-100 text-primary-700 hover:bg-primary-200 border-transparent mb-2"
+                >
+                  <Download className="w-4 h-4 mr-2" /> Install App
+                </Button>
+             )}
+
              {user ? (
                <div className="flex items-center gap-4 mb-4" onClick={() => { onClose(); navigateToProfile(); }}>
                  <img src={user.avatar} className="w-12 h-12 rounded-full" alt="User" />
