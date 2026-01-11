@@ -1,11 +1,12 @@
-
 {
-  "framework": "vite",
   "rewrites": [
-    { 
-      "source": "/api/(.*)", 
-      "destination": "lumina-store-production-7a6c.up.railway.app/api/$1" 
+    {
+      "source": "/api/(.*)",
+      "destination": "https://lumina-store-production-7a6c.up.railway.app/api/$1"
     },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }
