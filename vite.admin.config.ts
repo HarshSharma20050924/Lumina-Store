@@ -1,6 +1,7 @@
 
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [
@@ -10,7 +11,6 @@ export default defineConfig({
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
           const url = req.url || '';
-          // Rewrite root or SPA routes to admin.html, BUT exclude Vite internals, API, and static assets
           if (
             url === '/' || 
             (
@@ -28,9 +28,16 @@ export default defineConfig({
       },
     },
   ],
+  build: {
+    rollupOptions: {
+      input: {
+        admin: resolve(__dirname, 'admin.html'),
+      },
+    },
+  },
   server: {
     port: 3002,
     strictPort: true,
-    host: true, // Listen on 0.0.0.0
+    host: true,
   }
 });
