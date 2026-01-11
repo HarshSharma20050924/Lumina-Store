@@ -14,7 +14,7 @@ export const checkEmail = async (req: Request, res: Response) => {
 
 // @desc    Register a new user
 export const registerUser = async (req: Request, res: Response) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
 
   try {
     const userExists = await prisma.user.findUnique({ where: { email } });
@@ -25,12 +25,16 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const hashedPassword = await hashPassword(password);
 
+    // Allow AGENT registration via public endpoint for the Driver App flow.
+    // Default to USER. Prevent ADMIN creation via public route.
+    const userRole = role === 'AGENT' ? 'AGENT' : 'USER';
+
     const user = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
-        role: 'USER' 
+        role: userRole
       },
     });
 
@@ -91,7 +95,7 @@ export const sendOtp = async (req: Request, res: Response) => {
 
 // @desc    Verify OTP and Create/Update User
 export const verifyOtp = async (req: Request, res: Response) => {
-    const { email, otp, password, name } = req.body;
+    const { email, otp, password, name, role } = req.body;
     
     if (otpStore[email] !== otp) {
         return res.status(400).json({ message: 'Invalid OTP' });
@@ -105,12 +109,14 @@ export const verifyOtp = async (req: Request, res: Response) => {
         // If user doesn't exist and password provided -> Registration
         if (!user && password) {
             const hashedPassword = await hashPassword(password);
+            const userRole = role === 'AGENT' ? 'AGENT' : 'USER';
+            
             user = await prisma.user.create({
                 data: {
                     name: name || email.split('@')[0],
                     email,
                     password: hashedPassword,
-                    role: 'USER',
+                    role: userRole,
                     isPhoneVerified: true // Auto-verify on registration via OTP
                 }
             });
@@ -222,6 +228,20 @@ export const updateUserProfile = async (req: Request, res: Response) => {
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
 
     if (user) {
+      // Check for unique phone number if it's being updated
+      if (req.body.phone && req.body.phone !== user.phone) {
+          const existingPhone = await prisma.user.findFirst({
+              where: { 
+                  phone: req.body.phone,
+                  id: { not: req.user.id } // Ensure it's not the same user
+              }
+          });
+          
+          if (existingPhone) {
+              return res.status(400).json({ message: 'Phone number already associated with another account' });
+          }
+      }
+
       const updateData: any = {
           name: req.body.name || user.name,
           email: req.body.email || user.email,

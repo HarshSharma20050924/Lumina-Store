@@ -82,7 +82,8 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
 
   registerDriver: async (data) => {
       try {
-          const res = await api.post('/auth/register', { ...data });
+          // Pass role 'AGENT' to ensure backend creates user with correct permissions
+          const res = await api.post('/auth/register', { ...data, role: 'AGENT' });
           
           const isDev = import.meta.env.DEV;
           const currentPort = window.location.port;
@@ -120,11 +121,7 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
           
           if (response.otp) {
               // Trigger System Notification ONLY
-              // We do NOT show a toast so the user relies on the native "Autofill" 
-              // or the system notification shade.
               const msg = `Lumina Code: ${response.otp}`;
-              
-              // Non-blocking notification send to prevent UI hang
               sendNotification("Verification Code", msg).catch(console.error);
           } else {
               get().addToast({ type: 'info', message: `Verification code sent to ${email}` });
@@ -234,6 +231,7 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
         if (adminToken) {
             try {
                 const adminUser = await api.get('/auth/me', 'admin');
+                if (adminUser.role !== 'ADMIN') throw new Error('Not admin');
                 set({ adminUser });
             } catch {
                 localStorage.removeItem('admin_token');
@@ -248,6 +246,11 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
         if (driverToken) {
             try {
                 const driverUser = await api.get('/auth/me', 'driver');
+                // IMPORTANT: Strictly check role to prevent 403 loops on orders endpoint
+                if (driverUser.role !== 'AGENT') {
+                    get().addToast({ type: 'error', message: 'Account is not authorized as a Driver' });
+                    throw new Error('Not agent');
+                }
                 set({ driverUser });
             } catch {
                 localStorage.removeItem('driver_token');
