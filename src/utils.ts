@@ -32,3 +32,55 @@ export const getAppUrl = (app: 'store' | 'admin' | 'driver') => {
       return import.meta.env.VITE_DRIVER_URL || 'https://lumina-driver-black.vercel.app';
   }
 };
+
+/**
+ * Sends a notification using Service Worker if available (for Mobile/Android support),
+ * falling back to standard Notification API.
+ * Includes a timeout to prevent hanging if SW is unresponsive.
+ */
+export const sendNotification = async (title: string, body: string) => {
+  if (!("Notification" in window)) return;
+
+  if (Notification.permission === "default") {
+    await Notification.requestPermission();
+  }
+
+  if (Notification.permission !== "granted") return;
+
+  const options = {
+    body,
+    icon: '/logo.svg',
+    badge: '/logo.svg',
+    vibrate: [200, 100, 200],
+    requireInteraction: true,
+    tag: 'lumina-notification'
+  };
+
+  // Try Service Worker first (Required for Android Chrome)
+  if ('serviceWorker' in navigator) {
+    try {
+      // Race condition: If SW isn't ready in 500ms, fall back to standard notification
+      // This prevents the "loading forever" issue during auth
+      const swRegistration = await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise((_, reject) => setTimeout(() => reject('SW_TIMEOUT'), 500))
+      ]);
+
+      if (swRegistration && 'showNotification' in swRegistration) {
+        // @ts-ignore
+        await swRegistration.showNotification(title, options);
+        return;
+      }
+    } catch (e) {
+      // Fallback silently if SW isn't ready or times out
+      // console.warn("SW Notification failed or timed out, using fallback", e);
+    }
+  }
+
+  // Desktop/Fallback
+  try {
+    new Notification(title, options);
+  } catch (e) {
+    console.error("Notification API failed", e);
+  }
+};

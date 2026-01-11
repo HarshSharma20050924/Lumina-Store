@@ -27,6 +27,31 @@ export const DeliveryLayout = () => {
       if(driverUser) fetchAgentJobs();
   }, [fetchAgentJobs, driverUser]);
 
+  // WebOTP API: Listen for incoming SMS
+  useEffect(() => {
+    if (step === 'OTP' && 'credentials' in navigator) {
+      const ac = new AbortController();
+      
+      // @ts-ignore: WebOTP API
+      navigator.credentials.get({
+        otp: { transport: ['sms'] },
+        signal: ac.signal
+      }).then((otpCredential: any) => {
+        if (otpCredential) {
+          setOtp(otpCredential.code);
+          // Optional: Auto-submit here if desired
+          // handleVerifyOtp(new Event('submit') as any); 
+        }
+      }).catch((err: any) => {
+        console.debug('WebOTP waiting ended', err);
+      });
+
+      return () => {
+        ac.abort();
+      };
+    }
+  }, [step]);
+
   // Step 1: Check Email & Send OTP
   const handleSendOtp = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -206,6 +231,7 @@ export const DeliveryLayout = () => {
                                 maxLength={6}
                                 value={otp}
                                 onChange={(e) => setOtp(e.target.value)}
+                                autoComplete="one-time-code" 
                                 required
                               />
                               <Button className="w-full bg-blue-600 hover:bg-blue-700" isLoading={loading}>

@@ -1,7 +1,7 @@
 
 import { api } from '../api';
 import { AppSlice, AuthSlice } from './types';
-import { getAppUrl } from '../utils';
+import { getAppUrl, sendNotification } from '../utils';
 
 // Helper to determine redirect URL based on environment
 const getRedirectUrl = (app: 'admin' | 'driver' | 'store', token?: string) => {
@@ -11,54 +11,6 @@ const getRedirectUrl = (app: 'admin' | 'driver' | 'store', token?: string) => {
         return `${baseUrl.replace(/\/$/, '')}/${search}`;
     }
     return `${baseUrl}${search}`;
-};
-
-// Robust Mobile Notification Sender
-const sendBrowserNotification = async (title: string, body: string) => {
-    // 1. Check basic support
-    if (!("Notification" in window)) {
-        console.warn("This browser does not support desktop notification");
-        return;
-    }
-
-    // 2. Request permission if needed
-    if (Notification.permission === "default") {
-        await Notification.requestPermission();
-    }
-
-    // 3. If granted, try to show
-    if (Notification.permission === "granted") {
-        // Method A: Service Worker (Required for Android/Mobile Chrome)
-        if ('serviceWorker' in navigator) {
-            try {
-                const registration = await navigator.serviceWorker.ready;
-                if (registration) {
-                    await registration.showNotification(title, {
-                        body,
-                        icon: '/logo.svg', // Ensure this matches manifest
-                        badge: '/logo.svg',
-                        vibrate: [200, 100, 200],
-                        tag: 'lumina-otp',
-                        requireInteraction: true // Keeps notification visible until clicked
-                    } as any);
-                    return;
-                }
-            } catch (swError) {
-                console.warn("ServiceWorker notification failed:", swError);
-            }
-        }
-
-        // Method B: Classic Notification API (Desktop Fallback)
-        try {
-            new Notification(title, { 
-                body, 
-                icon: '/logo.svg',
-                requireInteraction: true 
-            });
-        } catch (e) {
-            console.warn("Classic Notification API failed:", e);
-        }
-    }
 };
 
 export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
@@ -163,21 +115,17 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
 
   sendOtp: async (email: string) => {
       try {
-          // Pre-emptively request permission on click (User Action)
-          if("Notification" in window && Notification.permission === "default") {
-              await Notification.requestPermission();
-          }
-
+          // Send request
           const response = await api.post('/auth/send-otp', { email });
           
           if (response.otp) {
-              const msg = `Security Code: ${response.otp}`;
+              // Trigger System Notification ONLY
+              // We do NOT show a toast so the user relies on the native "Autofill" 
+              // or the system notification shade.
+              const msg = `Lumina Code: ${response.otp}`;
               
-              // 1. Show Persistent Toast (Guaranteed Visibility)
-              get().addToast({ type: 'info', message: msg, duration: 15000 }); // 15 seconds
-              
-              // 2. Trigger System Notification
-              await sendBrowserNotification("Lumina Verification", msg);
+              // Non-blocking notification send to prevent UI hang
+              sendNotification("Verification Code", msg).catch(console.error);
           } else {
               get().addToast({ type: 'info', message: `Verification code sent to ${email}` });
           }
@@ -324,12 +272,10 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
   updateUserProfile: async (data) => {
     try {
       const updatedUser = await api.put('/auth/profile', data, 'client');
-      // Ensure we don't accidentally switch roles on the frontend
       set(state => ({ 
           user: { 
               ...state.user, 
               ...updatedUser,
-              // Keep original role if not explicitly changed
               role: state.user?.role || updatedUser.role 
           } 
       }));

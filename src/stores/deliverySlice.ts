@@ -2,6 +2,7 @@
 import { DeliveryJob, Order } from '../types';
 import { AppSlice, DeliverySlice } from './types';
 import { api } from '../api';
+import { sendNotification } from '../utils';
 
 export const createDeliverySlice: AppSlice<DeliverySlice> = (set, get) => ({
   agentJobs: [],
@@ -25,14 +26,13 @@ export const createDeliverySlice: AppSlice<DeliverySlice> = (set, get) => ({
               customerPhone: o.user?.phone || null,
             }));
 
-          // Check for NEW jobs if silent update (compare lengths or IDs)
+          // Check for NEW jobs if silent update (compare lengths)
           const currentCount = get().agentJobs.length;
           if (silent && jobs.length > currentCount) {
               const newJobs = jobs.length - currentCount;
+              // Use robust notification
+              sendNotification("New Delivery Assignment", "New orders are ready for pickup.");
               get().addToast({ type: 'info', message: `${newJobs} new delivery assignment(s)!`, duration: 5000 });
-              if ("Notification" in window && Notification.permission === "granted") {
-                  new Notification("New Delivery Assignment", { body: "New orders are ready for pickup." });
-              }
           }
 
           set({ agentJobs: jobs });

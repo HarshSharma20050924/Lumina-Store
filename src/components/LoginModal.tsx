@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
 import { Modal } from './ui/Modal';
 import { Button } from './ui/Button';
@@ -31,6 +32,23 @@ export const LoginModal = () => {
     match: password === confirmPass && password.length > 0
   };
   const isStrongPass = Object.values(passValidations).every(Boolean);
+
+  // WebOTP API hook
+  useEffect(() => {
+    if ((step === 'VERIFY_OTP' || step === 'FORGOT_PASSWORD_OTP') && 'credentials' in navigator) {
+        const ac = new AbortController();
+        // @ts-ignore
+        navigator.credentials.get({
+            otp: { transport: ['sms'] },
+            signal: ac.signal
+        }).then((otpCredential: any) => {
+            if (otpCredential) setOtp(otpCredential.code);
+        }).catch((err: any) => {
+            console.debug('WebOTP error or abort', err);
+        });
+        return () => ac.abort();
+    }
+  }, [step]);
 
   const resetForm = () => {
       setEmail('');
@@ -326,6 +344,7 @@ export const LoginModal = () => {
                             onChange={(e) => setOtp(e.target.value)}
                             className="text-center tracking-[0.5em] text-lg font-mono"
                             maxLength={6}
+                            autoComplete="one-time-code"
                             required
                             autoFocus
                         />
@@ -495,6 +514,7 @@ export const LoginModal = () => {
                             onChange={(e) => setOtp(e.target.value)}
                             className="text-center tracking-[0.5em] text-lg font-mono"
                             maxLength={6}
+                            autoComplete="one-time-code"
                             autoFocus
                         />
                         <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>

@@ -10,6 +10,7 @@ import { useStore } from '../store';
 import { AdminLayout } from './admin/AdminLayout';
 import { LookbookModal } from './LookbookModal';
 import { api } from '../api';
+import { sendNotification } from '../utils';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -34,11 +35,10 @@ export const Layout = ({ children }: LayoutProps) => {
               // We cast response to any[] to iterate
               const notifications: any[] = await api.get('/notifications/poll');
               notifications.forEach(notif => {
-                  // Trigger browser notification
-                  if ("Notification" in window && Notification.permission === "granted") {
-                      new Notification(notif.title, { body: notif.message, icon: '/vite.svg' });
-                  }
-                  // Trigger in-app toast
+                  // Use robust notification sender (handles Android/SW and desktop)
+                  sendNotification(notif.title, notif.message);
+                  
+                  // Trigger in-app toast backup
                   addToast({ type: 'info', message: `${notif.title}: ${notif.message}`, duration: 5000 });
               });
           } catch (e) {
