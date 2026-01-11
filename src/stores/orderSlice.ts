@@ -65,6 +65,7 @@ export const createOrderSlice: AppSlice<OrderSlice> = (set, get) => ({
 
   updateOrderStatus: async (orderId, status) => {
     try {
+      // Use api.patch for consistent URL handling across environments
       await api.patch(`/orders/${orderId}/status`, { status });
 
       set((state) => {

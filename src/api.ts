@@ -1,9 +1,25 @@
 
-// In production, we use the relative path /api which Vercel rewrites to the backend.
-// In development, we connect directly to localhost:5000 to avoid proxy complexities.
-const API_URL = import.meta.env.PROD 
-  ? '/api' 
-  : 'http://127.0.0.1:5000/api';
+// Determine API URL based on environment
+// 1. VITE_API_URL defined in .env (Priority)
+// 2. PROD mode -> use relative path '/api' (Expects a proxy or same-domain hosting)
+// 3. DEV mode fallback -> localhost:5000
+const getBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  if (import.meta.env.PROD) {
+    return '/api';
+  }
+  return 'http://localhost:5000/api';
+};
+
+const API_URL = getBaseUrl();
+
+// Base URL for static assets (images)
+// If API is on a different domain, we need to prefix images with that domain.
+const ASSET_URL = API_URL.startsWith('http') 
+  ? API_URL.replace('/api', '') 
+  : ''; 
 
 const getHeaders = (isMultipart: boolean = false) => {
   const token = localStorage.getItem('token') || 
@@ -82,9 +98,7 @@ export const api = {
     });
     
     if (!res.ok) throw await res.text();
-    const path = await res.text();
-    // Use the same base URL logic for images
-    const baseUrl = import.meta.env.PROD ? '' : 'http://127.0.0.1:5000';
-    return `${baseUrl}${path}`;
+    const path = await res.text(); // e.g. "/uploads/image.png"
+    return `${ASSET_URL}${path}`;
   }
 };

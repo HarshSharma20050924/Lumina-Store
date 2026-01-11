@@ -18,6 +18,16 @@ const getInitialView = (): any => {
   }
 };
 
+const getAppUrl = (app: 'admin' | 'driver') => {
+    const isDev = import.meta.env.DEV;
+    if (isDev) {
+        const port = app === 'admin' ? 3002 : 3003;
+        return `http://${window.location.hostname}:${port}/${app}.html`;
+    }
+    // Production (Same Origin)
+    return `/${app}.html`;
+};
+
 export const createUISlice: AppSlice<UISlice> = (set, get) => ({
   currentView: getInitialView(),
   currentCollection: null,
@@ -70,14 +80,11 @@ export const createUISlice: AppSlice<UISlice> = (set, get) => ({
   },
   
   navigateToAdmin: () => {
-    // Navigate to Admin App on port 3002
-    // We do NOT set currentView to 'admin' here to avoid polluting localStorage for other tabs
-    window.location.href = 'http://127.0.0.1:3002/admin.html';
+    window.location.href = getAppUrl('admin');
   },
   
   navigateToDelivery: () => {
-    // Navigate to Driver App on port 3003
-    window.location.href = 'http://127.0.0.1:3003/driver.html';
+    window.location.href = getAppUrl('driver');
   },
   
   navigateToPage: (slug) => {

@@ -2,6 +2,24 @@
 import { api } from '../api';
 import { AppSlice, AuthSlice } from './types';
 
+// Helper to determine redirect URL based on environment
+const getRedirectUrl = (app: 'admin' | 'driver' | 'store', token?: string) => {
+    const isDev = import.meta.env.DEV;
+    const search = token ? `?token=${token}` : '';
+    
+    if (isDev) {
+        // Multi-port setup in local development
+        const ports = { admin: 3002, driver: 3003, store: 3001 };
+        const file = app === 'store' ? '' : `${app}.html`;
+        // Use window.location.hostname to support local IP access (e.g. 192.168.x.x)
+        return `http://${window.location.hostname}:${ports[app]}/${file}${search}`;
+    } else {
+        // Single-domain setup in production (Vercel)
+        const file = app === 'store' ? '/' : `/${app}.html`;
+        return `${file}${search}`;
+    }
+};
+
 // Helper for Browser Notifications
 const sendBrowserNotification = (title: string, body: string) => {
     if (!("Notification" in window)) return;
@@ -30,42 +48,53 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
   login: async (email, password, name, role = 'USER') => {
     try {
       let data;
-      // If we are registering (name provided) and generic user
       if (name && role === 'USER') {
         data = await api.post('/auth/register', { email, password, name });
       } else {
-        // Driver login or Admin login or User login
         data = await api.post('/auth/login', { email, password });
       }
       
       const userRole = data.role; 
-      const hostname = window.location.hostname;
-      const port = window.location.port;
+      const currentPort = window.location.port;
+      const isDev = import.meta.env.DEV;
 
       if (userRole === 'ADMIN') {
           // Redirect to Admin App
-          if (port !== '3002') {
-              window.location.href = `http://127.0.0.1:3002/admin.html?token=${data.token}`;
+          if (isDev && currentPort !== '3002') {
+              window.location.href = getRedirectUrl('admin', data.token);
+              return;
+          } else if (!isDev && !window.location.pathname.includes('admin.html')) {
+              window.location.href = getRedirectUrl('admin', data.token);
               return;
           }
+          
           localStorage.setItem('admin_token', data.token);
           set({ adminUser: data });
           get().addToast({ type: 'success', message: 'Admin Dashboard Accessed' });
 
       } else if (userRole === 'AGENT') {
           // Redirect to Driver App
-          if (port !== '3003') {
-              window.location.href = `http://127.0.0.1:3003/driver.html?token=${data.token}`;
+          if (isDev && currentPort !== '3003') {
+              window.location.href = getRedirectUrl('driver', data.token);
+              return;
+          } else if (!isDev && !window.location.pathname.includes('driver.html')) {
+              window.location.href = getRedirectUrl('driver', data.token);
               return;
           }
+
           localStorage.setItem('driver_token', data.token);
           set({ driverUser: data });
           get().addToast({ type: 'success', message: 'Driver Interface Loaded' });
 
       } else {
           // Default Client User
-          if (port === '3002' || port === '3003') {
-               window.location.href = `http://127.0.0.1:3001/?token=${data.token}`;
+          // Check if we are on the wrong app (admin or driver)
+          const isWrongApp = 
+            (isDev && (currentPort === '3002' || currentPort === '3003')) ||
+            (!isDev && (window.location.pathname.includes('admin.html') || window.location.pathname.includes('driver.html')));
+
+          if (isWrongApp) {
+               window.location.href = getRedirectUrl('store', data.token);
                return;
           }
 
@@ -84,8 +113,11 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
       try {
           const res = await api.post('/auth/register', { ...data });
           
-          if (window.location.port !== '3003') {
-              window.location.href = `http://127.0.0.1:3003/driver.html?token=${res.token}`;
+          const isDev = import.meta.env.DEV;
+          const currentPort = window.location.port;
+
+          if ((isDev && currentPort !== '3003') || (!isDev && !window.location.pathname.includes('driver.html'))) {
+              window.location.href = getRedirectUrl('driver', res.token);
               return;
           }
 
@@ -201,15 +233,20 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
 
   checkAuth: async () => {
     const port = window.location.port;
+    const path = window.location.pathname;
+    const isDev = import.meta.env.DEV;
 
     // --- TOKEN HANDOVER LOGIC (from redirects) ---
     const params = new URLSearchParams(window.location.search);
     const urlToken = params.get('token');
 
+    const isAdminApp = (isDev && port === '3002') || (!isDev && path.includes('admin.html'));
+    const isDriverApp = (isDev && port === '3003') || (!isDev && path.includes('driver.html'));
+
     if (urlToken) {
-        if (port === '3002') {
+        if (isAdminApp) {
             localStorage.setItem('admin_token', urlToken);
-        } else if (port === '3003') {
+        } else if (isDriverApp) {
             localStorage.setItem('driver_token', urlToken);
         } else {
             localStorage.setItem('client_token', urlToken);
@@ -219,7 +256,7 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
     // ----------------------------
 
     // ADMIN APP
-    if (port === '3002') {
+    if (isAdminApp) {
         const adminToken = localStorage.getItem('admin_token');
         if (adminToken) {
             try {
@@ -234,7 +271,7 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
     }
 
     // DRIVER APP
-    if (port === '3003') {
+    if (isDriverApp) {
         const driverToken = localStorage.getItem('driver_token');
         if (driverToken) {
             try {
@@ -274,14 +311,17 @@ export const createAuthSlice: AppSlice<AuthSlice> = (set, get) => ({
   },
 
   logout: (role = 'USER') => {
+    const isDev = import.meta.env.DEV;
+    const storeUrl = isDev ? `http://${window.location.hostname}:3001/` : '/';
+
     if (role === 'ADMIN') {
         localStorage.removeItem('admin_token');
         set({ adminUser: null });
-        window.location.href = 'http://127.0.0.1:3001/';
+        window.location.href = storeUrl;
     } else if (role === 'AGENT') {
         localStorage.removeItem('driver_token');
         set({ driverUser: null });
-        window.location.href = 'http://127.0.0.1:3001/';
+        window.location.href = storeUrl;
     } else {
         localStorage.removeItem('client_token');
         set({ user: null });

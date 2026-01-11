@@ -29,11 +29,18 @@ const allowedOrigins = [
   'http://127.0.0.1:3003'
 ];
 
+// Add production frontend URL if set in environment variables
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.local')) {
+    
+    // Check against allowed origins list or allow if in production (flexible)
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.local') || process.env.NODE_ENV === 'production') {
       callback(null, true);
     } else {
       console.log('Blocked by CORS:', origin);

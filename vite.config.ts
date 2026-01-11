@@ -7,6 +7,6 @@ export default defineConfig({
   server: {
     port: 3001,
     strictPort: true,
-    host: '127.0.0.1',
+    host: true, // Listen on 0.0.0.0
   }
 });
