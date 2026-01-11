@@ -1,0 +1,48 @@
+{
+  "name": "lumina-store",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "cleanup": "npx kill-port 3001 3002 3003 5000 2019",
+    "predev": "npm run cleanup",
+    "dev": "concurrently -c \"blue,magenta,yellow,cyan,green\" \"npm:dev:store\" \"npm:dev:admin\" \"npm:dev:driver\" \"npm:dev:backend\" \"npm:dev:proxy\"",
+    "dev:store": "vite serve -c vite.config.ts",
+    "dev:admin": "vite serve -c vite.admin.config.ts",
+    "dev:driver": "vite serve -c vite.driver.config.ts",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:proxy": "caddy run",
+    "build": "tsc && vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@stripe/stripe-js": "^2.4.0",
+    "axios": "^1.6.7",
+    "clsx": "^2.1.0",
+    "framer-motion": "^11.0.3",
+    "lucide-react": "^0.330.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwind-merge": "^2.2.1",
+    "zustand": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.28",
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.17",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.56.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "kill-port": "^2.0.1",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.1.0"
+  }
+}

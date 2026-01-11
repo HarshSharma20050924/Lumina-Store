@@ -1,0 +1,14 @@
+:8080 {
+
+    @store host store.local
+    reverse_proxy @store 127.0.0.1:3001
+
+    @admin host admin.local
+    reverse_proxy @admin 127.0.0.1:3002
+
+    @driver host driver.local
+    reverse_proxy @driver 127.0.0.1:3003
+
+    @api host api.local
+    reverse_proxy @api 127.0.0.1:5000
+}

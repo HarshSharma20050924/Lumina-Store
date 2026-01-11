@@ -1,0 +1,271 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//
+// ─── ENUMS ────────────────────────────────────────────────────────────────
+//
+
+enum Role {
+  USER
+  ADMIN
+  AGENT
+}
+
+enum OrderStatus {
+  processing
+  shipped
+  delivered
+  cancelled
+}
+
+enum DeliveryStatus {
+  ASSIGNED
+  OUT_FOR_DELIVERY
+  ATTEMPTED
+  COMPLETED
+  FAILED
+}
+
+enum PaymentMethod {
+  ONLINE
+  COD
+}
+
+//
+// ─── USER & AUTH ───────────────────────────────────────────────────────────
+//
+
+model User {
+  id               String   @id @default(uuid())
+  name             String
+  email            String   @unique
+  password         String
+  role             Role     @default(USER)
+
+  // Profile
+  avatar           String?
+  phone            String?
+  isPhoneVerified  Boolean  @default(false)
+  address          String?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  orders           Order[]        @relation("CustomerOrders")
+  reviews          Review[]
+  notifications    Notification[]
+  agentProfile     AgentProfile?
+
+  @@index([email])
+  @@index([phone])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  userId    String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+//
+// ─── DELIVERY AGENT ─────────────────────────────────────────────────────────
+//
+
+model AgentProfile {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  isAvailable   Boolean  @default(true)
+  currentLat    Float?
+  currentLng    Float?
+  vehicleType   String?
+  cashCollected Float    @default(0.0)
+
+  user          User     @relation(fields: [userId], references: [id])
+  deliveries    Delivery[]
+}
+
+//
+// ─── PRODUCT CATALOG ───────────────────────────────────────────────────────
+//
+
+model Product {
+  id            String   @id @default(uuid())
+  name          String   @unique
+  description   String
+  price         Float
+  discountPrice Float?
+
+  // Categorization
+  category      String
+  subcategory   String?
+  gender        String?
+
+  // Media
+  image         String
+  hoverImage    String?
+  images        String[] @default([])
+
+  // Inventory
+  stock         Int      @default(0)
+  isNew         Boolean  @default(false)
+  isSale        Boolean  @default(false)
+
+  // Stats
+  rating        Float    @default(0)
+  reviewCount   Int      @default(0)
+
+  // Attributes
+  colors        String[]
+  sizes         String[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  reviews       Review[]
+  orderItems    OrderItem[]
+
+  @@index([category])
+  @@index([gender])
+  @@index([isNew])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int
+  comment   String
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@index([productId])
+}
+
+//
+// ─── ORDER SYSTEM ──────────────────────────────────────────────────────────
+//
+
+model Order {
+  id              String        @id @default(uuid())
+  userId          String
+  date            DateTime      @default(now())
+  status          OrderStatus   @default(processing)
+  trackingNumber  String?
+
+  // Financials
+  total           Float
+  tax             Float         @default(0)
+  shippingCost    Float         @default(0)
+  shippingAddress String
+  paymentMethod   PaymentMethod @default(ONLINE)
+  isPaid          Boolean       @default(false)
+
+  // Security
+  deliveryCode    String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user            User        @relation("CustomerOrders", fields: [userId], references: [id])
+  items           OrderItem[]
+  delivery        Delivery?
+
+  @@index([userId])
+  @@index([status])
+}
+
+model OrderItem {
+  id            String @id @default(uuid())
+  orderId       String
+  productId     String
+  quantity      Int
+  price         Float
+  selectedColor String
+  selectedSize  String
+
+  order         Order   @relation(fields: [orderId], references: [id])
+  product       Product @relation(fields: [productId], references: [id])
+}
+
+//
+// ─── LOGISTICS SYSTEM ───────────────────────────────────────────────────────
+//
+
+model Delivery {
+  id              String         @id @default(uuid())
+  orderId         String         @unique
+  agentId         String?
+  status          DeliveryStatus @default(ASSIGNED)
+
+  // Verification
+  proofPhoto      String?
+  signature       String?
+
+  // COD
+  codAmount       Float          @default(0)
+  amountCollected Float          @default(0)
+
+  // Timestamps
+  assignedAt      DateTime @default(now())
+  attemptedAt     DateTime?
+  deliveredAt     DateTime?
+
+  order           Order         @relation(fields: [orderId], references: [id])
+  agent           AgentProfile? @relation(fields: [agentId], references: [id])
+
+  @@index([agentId])
+  @@index([status])
+}
+
+//
+// ─── CMS ───────────────────────────────────────────────────────────────────
+//
+
+model HeroSlide {
+  id       String @id @default(uuid())
+  title    String
+  subtitle String
+  image    String
+  align    String @default("left")
+  order    Int    @default(0)
+}
+
+model SiteSection {
+  id          String @id @default(uuid())
+  identifier  String @unique
+  title       String
+  description String
+  image       String
+  link        String?
+}
+
+model SocialLink {
+  id       String @id @default(uuid())
+  platform String
+  url      String
+}
+
+model StaticPage {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  title     String
+  content   String   @db.Text
+  updatedAt DateTime @updatedAt
+}
