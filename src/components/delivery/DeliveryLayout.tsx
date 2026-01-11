@@ -32,10 +32,13 @@ export const DeliveryLayout = () => {
     if (step === 'OTP' && 'credentials' in navigator) {
       const ac = new AbortController();
       
-      navigator.credentials.get({
+      // Cast to any for experimental API support
+      const options: any = {
         otp: { transport: ['sms'] },
         signal: ac.signal
-      } as any).then((otpCredential: any) => {
+      };
+
+      navigator.credentials.get(options).then((otpCredential: any) => {
         if (otpCredential) {
           setOtp(otpCredential.code);
           // Optional: Auto-submit here if desired

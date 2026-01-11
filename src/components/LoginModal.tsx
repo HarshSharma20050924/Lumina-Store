@@ -37,10 +37,13 @@ export const LoginModal = () => {
   useEffect(() => {
     if ((step === 'VERIFY_OTP' || step === 'FORGOT_PASSWORD_OTP') && 'credentials' in navigator) {
         const ac = new AbortController();
-        navigator.credentials.get({
+        // Cast to any to avoid TS error with 'otp' property
+        const options: any = {
             otp: { transport: ['sms'] },
             signal: ac.signal
-        } as any).then((otpCredential: any) => {
+        };
+        
+        navigator.credentials.get(options).then((otpCredential: any) => {
             if (otpCredential) setOtp(otpCredential.code);
         }).catch((err: any) => {
             console.debug('WebOTP error or abort', err);

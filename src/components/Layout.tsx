@@ -32,8 +32,9 @@ export const Layout = ({ children }: LayoutProps) => {
 
       const poll = async () => {
           try {
-              // We cast response to any[] to iterate
-              const notifications: any[] = await api.get('/notifications/poll');
+              // Cast response to any[] to iterate
+              // Pass 'client' context to ensure we use the client_token
+              const notifications: any[] = await api.get('/notifications/poll', 'client');
               notifications.forEach(notif => {
                   // Use robust notification sender (handles Android/SW and desktop)
                   sendNotification(notif.title, notif.message);
