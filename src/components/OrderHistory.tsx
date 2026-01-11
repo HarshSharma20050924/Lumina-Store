@@ -116,9 +116,9 @@ export const OrderHistory = ({ orders }: OrderHistoryProps) => {
                           <div className="flex items-center gap-4 mt-2">
                              <button 
                                 onClick={() => handleWriteReview({ 
-                                    id: item.productId, 
+                                    id: item.productId || item.id, // Fallback to item.id if productId missing
                                     name: item.name, 
-                                    image: item.image // Pass actual image from item
+                                    image: item.image 
                                 })}
                                 className="text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors flex items-center gap-1"
                              >

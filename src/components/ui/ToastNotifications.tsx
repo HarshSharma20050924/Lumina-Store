@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
@@ -37,9 +38,9 @@ const ToastItem = ({ toast, onRemove }: { toast: any; onRemove: () => void }) =>
         clearTimeout(timerRef.current);
       }
     };
-  }, []); // Empty dependency array ensures it runs once on mount
+  }, []); 
 
-  const icons = {
+  const icons: Record<string, React.ReactNode> = {
     success: <CheckCircle className="w-5 h-5 text-green-500" />,
     error: <AlertCircle className="w-5 h-5 text-red-500" />,
     info: <Info className="w-5 h-5 text-blue-500" />
@@ -54,7 +55,7 @@ const ToastItem = ({ toast, onRemove }: { toast: any; onRemove: () => void }) =>
       className="pointer-events-auto bg-white/95 backdrop-blur-md border border-gray-200 shadow-xl rounded-lg p-4 pr-10 min-w-[320px] max-w-md relative overflow-hidden group"
     >
       <div className="flex items-start gap-3">
-        <div className="mt-0.5">{icons[toast.type]}</div>
+        <div className="mt-0.5">{icons[toast.type] || icons.info}</div>
         <p className="text-sm font-medium text-gray-900 leading-snug">{toast.message}</p>
       </div>
       

@@ -40,18 +40,11 @@ export interface CartSlice {
 }
 
 export interface AuthSlice {
-  // Client State
   user: User | null;
   isLoginOpen: boolean;
   toggleLoginModal: (isOpen?: boolean) => void;
-  
-  // Admin State
   adminUser: User | null;
-  
-  // Driver State
   driverUser: User | null;
-
-  // Actions
   login: (email: string, password?: string, name?: string, role?: 'USER' | 'ADMIN' | 'AGENT') => Promise<void>;
   registerDriver: (data: { email: string, password: string, name: string }) => Promise<void>;
   logout: (role?: 'USER' | 'ADMIN' | 'AGENT') => void;
@@ -72,7 +65,8 @@ export interface OrderSlice {
   resetCheckout: () => void;
   fetchMyOrders: () => Promise<void>;
   fetchAllOrders: () => Promise<void>;
-  placeOrder: (shippingAddress: string, saveAddress?: boolean) => Promise<void>;
+  // Updated signature to match usage in Checkout.tsx
+  placeOrder: (shippingAddress: string, saveAddress?: boolean, paymentMethod?: 'ONLINE' | 'COD') => Promise<void>;
   updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
 }
 
@@ -93,13 +87,14 @@ export interface CMSSlice {
 
 export interface DeliverySlice {
   agentJobs: DeliveryJob[];
-  fetchAgentJobs: () => Promise<void>;
+  fetchAgentJobs: (silent?: boolean) => Promise<void>;
   completeDelivery: (jobId: string, otp: string, photo: File | null) => Promise<void>;
   notifyArrival: (jobId: string) => Promise<void>;
 }
 
 export interface UISlice {
-  currentView: 'home' | 'collection' | 'product-detail' | 'checkout' | 'profile' | 'admin' | 'page' | 'delivery';
+  // Added 'lookbook' to union type
+  currentView: 'home' | 'collection' | 'product-detail' | 'checkout' | 'profile' | 'admin' | 'page' | 'delivery' | 'lookbook';
   currentCollection: string | null;
   currentPageSlug: string | null;
   selectedProduct: Product | null;
@@ -117,7 +112,6 @@ export interface UISlice {
   addToast: (toast: Omit<Toast, 'id'>) => void;
   removeToast: (id: string) => void;
   
-  // Pagination
   currentPage: number;
   itemsPerPage: number;
   setPage: (page: number) => void;

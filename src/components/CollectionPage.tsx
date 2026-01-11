@@ -1,5 +1,5 @@
 
-// import React from 'react';
+import React from 'react';
 import { useStore } from '../store';
 import { ProductGrid } from './ProductGrid';
 import { CategorySidebar } from './CategorySidebar';
@@ -80,7 +80,7 @@ export const CollectionPage = () => {
                         {/* Dynamic Sub Categories Quick Links */}
                         {subCategories.length > 0 && (
                             <div className="flex flex-wrap gap-4">
-                                {subCategories.map((sub, idx) => (
+                                {subCategories.map((sub: string, idx: number) => (
                                     <button
                                         key={`${sub}-${idx}`}
                                         onClick={() => handleSubCategory(sub)}
