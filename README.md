@@ -18,6 +18,17 @@
 
 **Lumina** is a full-stack, minimalist e-commerce ecosystem built for the modern web. It features a monolithic repository structure containing three distinct applications (Storefront, Admin Console, Logistics Driver App) powered by a robust Node.js backend.
 
+# 🌐 Live Demos
+
+Experience Lumina in action:
+
+- **Storefront (Customer):** [lumina-store-black.vercel.app](https://lumina-store-black.vercel.app/)
+- **Admin Dashboard:** [lumina-admin-black.vercel.app](https://lumina-admin-black.vercel.app/)
+- **Driver App:** [lumina-driver-black.vercel.app](https://lumina-driver-black.vercel.app/)
+
+*Note: All applications are connected to a shared backend API and database. Use the demo credentials provided in the Getting Started section to explore all features.*
+
+
 ##  Key Features
 
 ###  Storefront (Customer Experience)
