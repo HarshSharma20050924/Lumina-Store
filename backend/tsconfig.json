@@ -16,6 +16,6 @@
     "esm": false,
     "files": true
   },
-  "include": ["src/**/*", "../src/entry-admin.tsx", "../src/entry-driver.tsx", "../src/entry-store.tsx"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules"]
 }
