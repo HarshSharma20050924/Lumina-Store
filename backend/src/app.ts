@@ -26,7 +26,11 @@ const allowedOrigins = [
   'http://localhost:3003',
   'http://127.0.0.1:3001',
   'http://127.0.0.1:3002',
-  'http://127.0.0.1:3003'
+  'http://127.0.0.1:3003',
+  'https://lumina-store-black.vercel.app',
+  'https://lumina-driver-black.vercel.app',
+  'https://lumina-admin-black.vercel.app',
+  'https://lumina-store-esgm.onrender.com'
 ];
 
 // Add production frontend URL if set in environment variables
