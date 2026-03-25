@@ -2,7 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_key_123';
+import JWT_SECRET from '../config/jwt';
 
 interface DecodedToken {
   id: string;
@@ -18,6 +18,11 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
     try {
       token = req.headers.authorization.split(' ')[1];
 
+      if (!token || token === 'undefined' || token === 'null') {
+          console.error('[Auth Error] Invalid token string received:', token);
+          return res.status(401).json({ message: 'Not authorized, invalid token format' });
+      }
+
       const decoded = jwt.verify(token, JWT_SECRET) as DecodedToken;
 
       req.user = {
@@ -25,9 +30,10 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
         role: decoded.role,
       };
 
-      next();
-    } catch (error) {
-      res.status(401).json({ message: 'Not authorized, token failed' });
+      return next();
+    } catch (error: any) {
+      console.error('[Auth Error] Token verification failed:', error.message);
+      return res.status(401).json({ message: 'Not authorized, token failed' });
     }
   }
 

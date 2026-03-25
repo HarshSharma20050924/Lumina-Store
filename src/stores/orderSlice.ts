@@ -11,7 +11,7 @@ export const createOrderSlice: AppSlice<OrderSlice> = (set, get) => ({
   
   fetchMyOrders: async () => {
      try {
-       const orders = await api.get('/orders/myorders');
+       const orders = await api.get('/orders/myorders', 'client');
        set({ orders });
      } catch (error) {
        console.error(error);
@@ -20,6 +20,7 @@ export const createOrderSlice: AppSlice<OrderSlice> = (set, get) => ({
 
   fetchAllOrders: async () => {
     try {
+      // Use client or admin context depending on where this is called
       const orders = await api.get('/orders');
       set({ orders });
     } catch (error) {
@@ -48,7 +49,7 @@ export const createOrderSlice: AppSlice<OrderSlice> = (set, get) => ({
         orderItems,
         shippingAddress,
         paymentMethod
-      });
+      }, 'client');
 
       set((state) => ({
         orders: [newOrder, ...state.orders],

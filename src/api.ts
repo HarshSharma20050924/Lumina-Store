@@ -29,11 +29,12 @@ const getHeaders = (isMultipart: boolean = false, context?: 'client' | 'admin' |
   else if (context === 'driver') token = localStorage.getItem('driver_token');
   else if (context === 'client') token = localStorage.getItem('client_token');
   
-  // 2. Fallback to generic token hierarchy if no context or token not found
+  // 2. Fallback to generic token if no context OR context-specific not found
   if (!token) {
-      token = localStorage.getItem('token') || 
+      // Prioritize client_token for general store requests
+      token = localStorage.getItem('client_token') || 
+              localStorage.getItem('token') || 
               localStorage.getItem('admin_token') || 
-              localStorage.getItem('client_token') || 
               localStorage.getItem('driver_token');
   }
   

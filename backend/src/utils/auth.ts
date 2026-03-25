@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_key_123';
+import JWT_SECRET from '../config/jwt';
 
 // Generate JWT Token
 export const generateToken = (id: string, role: string) => {
