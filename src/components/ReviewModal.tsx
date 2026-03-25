@@ -4,6 +4,7 @@ import { Button } from './ui/Button';
 import { RatingStars } from './ui/RatingStars';
 import { useStore } from '../store';
 import { Product } from '../types';
+import { getImageUrl } from '../api';
 
 interface ReviewModalProps {
   isOpen: boolean;
@@ -37,7 +38,7 @@ export const ReviewModal = ({ isOpen, onClose, product }: ReviewModalProps) => {
       <div className="p-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4">Write a Review</h2>
         <div className="flex items-center gap-4 mb-6 p-3 bg-gray-50 rounded-lg">
-           <img src={product.image} className="w-12 h-16 object-cover rounded" alt="" />
+           <img src={getImageUrl(product.image)} className="w-12 h-16 object-cover rounded" alt="" />
            <div>
                <p className="text-sm text-gray-500">Reviewing</p>
                <p className="font-medium text-gray-900 line-clamp-1">{product.name}</p>

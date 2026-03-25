@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ChevronLeft, ChevronRight, BookOpen, ArrowDown } from 'lucide-react';
 import { Button } from './ui/Button';
 import { useStore } from '../store';
+import { getImageUrl } from '../api';
 
 export const HeroCarousel = () => {
   const { heroSlides, toggleLookbook } = useStore();
@@ -53,7 +54,7 @@ export const HeroCarousel = () => {
           {/* Image */}
           <div className="absolute inset-0">
              <img
-               src={currentSlide.image}
+               src={getImageUrl(currentSlide.image)}
                alt={currentSlide.title}
                className="w-full h-full object-cover opacity-80 object-top md:object-center"
              />

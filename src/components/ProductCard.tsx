@@ -7,6 +7,7 @@ import { Button } from './ui/Button';
 import { WishlistButton } from './ui/WishlistButton';
 import { RatingStars } from './ui/RatingStars';
 import { cn, formatPrice } from '../utils';
+import { getImageUrl } from '../api';
 
 interface ProductCardProps {
   product: Product;
@@ -56,7 +57,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
         {/* Images */}
         <img
-          src={product.image}
+          src={getImageUrl(product.image)}
           alt={product.name}
           className={cn(
             "absolute inset-0 h-full w-full object-cover transition-all duration-700 ease-in-out",
@@ -64,7 +65,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           )}
         />
         <img
-          src={product.hoverImage}
+          src={getImageUrl(product.hoverImage)}
           alt={product.name}
           className={cn(
             "absolute inset-0 h-full w-full object-cover transition-all duration-700 ease-in-out",

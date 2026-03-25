@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../utils';
 import { ImageZoom } from './ui/ImageZoom';
 import { WishlistButton } from './ui/WishlistButton';
+import { getImageUrl } from '../api';
 
 interface ProductImageGalleryProps {
   images: string[];
@@ -20,7 +21,7 @@ export const ProductImageGallery = ({ images, productName, productId }: ProductI
         className="aspect-[3/4] rounded-2xl overflow-hidden bg-gray-100 w-full relative group border border-gray-100 shadow-sm"
       >
         <ImageZoom 
-          src={activeImage} 
+          src={getImageUrl(activeImage)} 
           alt={productName} 
           className="w-full h-full"
         />
@@ -45,7 +46,7 @@ export const ProductImageGallery = ({ images, productName, productId }: ProductI
             )}
             aria-label={`View image ${idx + 1}`}
           >
-            <img src={img} alt="" className="w-full h-full object-cover" />
+            <img src={getImageUrl(img)} alt="" className="w-full h-full object-cover" />
             {activeImage === img && <div className="absolute inset-0 bg-black/5 pointer-events-none" />}
           </button>
         ))}

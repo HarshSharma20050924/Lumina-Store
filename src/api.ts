@@ -4,22 +4,35 @@
 // 2. PROD mode -> use relative path '/api' (Expects a proxy or same-domain hosting)
 // 3. DEV mode fallback -> localhost:5000
 const getBaseUrl = () => {
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
+  let url = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
+  
+  // Fix common missing protocol issues
+  if (url.includes('render.com') && !url.startsWith('http')) {
+      url = 'https://' + url;
   }
-  if (import.meta.env.PROD) {
-    return '/api';
+  
+  // Clean up dual slashes and ensure it ends with /api if not relative
+  url = url.replace(/\/+$/, '');
+  if (!url.startsWith('/') && !url.endsWith('/api')) {
+      url = `${url}/api`;
   }
-  return 'http://localhost:5000/api';
+  
+  return url;
 };
 
 const API_URL = getBaseUrl();
 
-// Base URL for static assets (images)
-// If API is on a different domain, we need to prefix images with that domain.
 const ASSET_URL = API_URL.startsWith('http') 
-  ? API_URL.replace('/api', '') 
+  ? API_URL.replace(/\/api$/, '') 
   : ''; 
+
+export const getImageUrl = (path: string) => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  // Ensure leading slash for path
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return `${ASSET_URL}${normalizedPath}`;
+};
 
 const getHeaders = (isMultipart: boolean = false, context?: 'client' | 'admin' | 'driver') => {
   let token = null;

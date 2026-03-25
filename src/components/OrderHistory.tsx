@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Package, Truck, CheckCircle, Clock, ChevronRight, PenTool, Search, KeyRound } from 'lucide-react';
 import { Order, OrderStatus } from '../types';
 import { formatPrice } from '../utils';
+import { getImageUrl } from '../api';
 import { Button } from './ui/Button';
 import { ReviewModal } from './ReviewModal';
 import { TrackingModal } from './TrackingModal';
@@ -101,7 +102,7 @@ export const OrderHistory = ({ orders }: OrderHistoryProps) => {
                   <div key={`${order.id}-${idx}`} className="flex gap-4">
                     <div className="h-20 w-16 flex-shrink-0 overflow-hidden rounded-md border border-gray-200 bg-gray-50">
                       <img
-                        src={item.image}
+                        src={getImageUrl(item.image)}
                         alt={item.name}
                         className="h-full w-full object-cover object-center"
                       />

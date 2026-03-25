@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Share2, Ruler, MessageSquare } from 'lucide-react';
 import { useStore } from '../store';
 import { Button } from './ui/Button';
+import { getImageUrl } from '../api';
 import { Breadcrumbs } from './ui/Breadcrumbs';
 import { RatingStars } from './ui/RatingStars';
 import { SizeSelector } from './ui/SizeSelector';
@@ -218,7 +219,7 @@ export const ProductDetails = () => {
                               <div className="flex items-center gap-3">
                                   <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center text-gray-500 font-bold">
                                       {review.user?.avatar ? (
-                                          <img src={review.user.avatar} className="w-full h-full object-cover" alt="" />
+                                          <img src={getImageUrl(review.user.avatar)} className="w-full h-full object-cover" alt="" />
                                       ) : (
                                           review.user?.name?.charAt(0) || 'A'
                                       )}

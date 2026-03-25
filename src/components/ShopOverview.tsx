@@ -3,6 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { useStore } from '../store';
+import { getImageUrl } from '../api';
 
 export const ShopOverview = () => {
   const { sections, navigateToCollection, setFilter, navigateHome } = useStore();
@@ -68,7 +69,7 @@ export const ShopOverview = () => {
           >
             <div className="absolute inset-0 bg-gray-200">
               <img
-                src={section.image}
+                src={getImageUrl(section.image)}
                 alt={section.title}
                 className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110"
               />

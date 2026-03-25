@@ -138,24 +138,37 @@ export const getMyOrders = async (req: Request, res: Response) => {
   if (!req.user) return res.status(401).json({ message: 'Not authorized' });
 
   try {
-    const orders = await prisma.order.findMany({
+    const ordersData = await prisma.order.findMany({
       where: { userId: req.user.id },
       include: {
         items: {
-            include: {
-                product: {
-                    select: {
-                        name: true,
-                        image: true
-                    }
-                }
+          include: {
+            product: {
+              select: {
+                name: true,
+                image: true
+              }
             }
+          }
         }
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    // Flatten items to include product info directly
+    const orders = ordersData.map(order => ({
+        ...order,
+        date: order.createdAt, // Ensure date matches frontend 'date' field
+        items: order.items.map(item => ({
+            ...item,
+            name: item.product.name,
+            image: item.product.image
+        }))
+    }));
+
     res.json(orders);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Server Error' });
   }
 };
